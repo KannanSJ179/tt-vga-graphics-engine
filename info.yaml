@@ -12,8 +12,8 @@ project:
   top_module: "tt_um_vga_example"
 
   source_files:
-    - src/project.v
-    - src/hvsync_generator.v
+  - project.v
+  - hvsync_generator.v
 
 pinout:
   ui[0]: "Unused"
