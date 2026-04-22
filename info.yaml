@@ -1,0 +1,43 @@
+project:
+  name: "Multi-Mode VGA Graphics Engine"
+  author: "Kannan S J"
+  description: "Procedural VGA graphics engine with multiple real-time modes using pure logic (no memory)."
+  language: "Verilog"
+  clock_hz: 25000000
+
+  top_module: "tt_um_vga_example"
+
+  source_files:
+    - "src/project.v"
+    - "src/hvsync_generator.v"
+
+pinout:
+  ui:
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+
+  uo:
+    - "R1"
+    - "G1"
+    - "B1"
+    - "VSYNC"
+    - "R0"
+    - "G0"
+    - "B0"
+    - "HSYNC"
+
+  uio:
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
+    - "unused"
