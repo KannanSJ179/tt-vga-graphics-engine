@@ -1,0 +1,48 @@
+name: test
+on: [push, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install iverilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python packages
+        run: pip install cocotb pytest
+
+      - name: Run tests
+        run: |
+          cd test
+          make
+          ! grep -E '<(failure|error)' results.xml
+
+      - name: Check results exist
+        id: check
+        if: always()
+        run: |
+          [ -f test/results.xml ] && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          if-no-files-found: warn
+          path: test/results.xml
+
+      - name: Test summary
+        if: always() && steps.check.outputs.exists == 'true'
+        uses: test-summary/action@v2.3
+        with:
+          paths: test/results.xml
