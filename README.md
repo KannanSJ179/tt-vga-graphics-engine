@@ -1,127 +1,111 @@
 # Multi-Mode Procedural VGA Graphics Engine
 
-A TinyTapeout submission that generates real-time procedural visuals over VGA
-(640x480) using pure combinational and sequential logic — no memory, no ROM,
-no lookup tables.
+## Demo
+
+![VGA Output](output.gif)
+
+---
+
+## Concept
+
+This project implements a real-time procedural graphics engine entirely in hardware.
+
+Instead of using framebuffers or memory, every pixel is computed mathematically
+from its coordinates and time. This enables complex animated visuals using only
+arithmetic and bitwise logic, making the design highly efficient and suitable
+for ASIC implementation.
+
+---
 
 ## Features
 
 - Four distinct procedural rendering modes
 - Automatic mode switching driven by a frame counter
-- Radial distance approximation via octagonal norm (no division, no square root)
-- Centered coordinate system with signed arithmetic
-- Full 640x480 VGA output at 2 bits per color channel (RGB222)
-- Synthesizable Verilog, TinyTapeout-compatible
-- Zero external memory requirements
+- Real-time animation without memory or lookup tables
+- Radial distance approximation using octagonal norm (no sqrt/division)
+- Full 640×480 VGA output (RGB222)
+- Fully synthesizable Verilog (TinyTapeout compatible)
+
+---
 
 ## How It Works
 
-The design operates as a purely combinational rendering pipeline. On every
-pixel clock tick, the current pixel position (hpos, vpos) is transformed into
-centered coordinates and fed through one of four pattern generators. The
-selected generator produces an 8-bit pattern value that is mapped directly to
-RGB output bits.
-
-A 10-bit frame counter increments once per frame (at hpos=0, vpos=0). The
-upper two bits of this counter select the active rendering mode, causing the
-display to cycle through all four modes automatically.
-
-### Rendering Pipeline
-
-```
+Each pixel is generated on-the-fly using a combinational pipeline:
 hpos, vpos
-    │
-    ▼
+↓
 Centered coordinates (cx, cy)
-    │
-    ▼
+↓
 Absolute values (ax, ay)
-    │
-    ▼
-Scaled inputs (ax_s, ay_s = ax>>2, ay>>2)
-    │
-    ▼
-Octagonal radial approximation: r = max + min/2
-    │
-    ├──── Mode 0: Radial Energy Field
-    ├──── Mode 1: Plasma
-    ├──── Mode 2: Interference
-    └──── Mode 3: Chaos
-              │
-              ▼
-        pattern[7:0]
-              │
-              ▼
-    color = pattern + t
-              │
-              ▼
-    R[1:0] G[1:0] B[1:0] → VGA output
-```
+↓
+Scaled coordinates
+↓
+Radial approximation (r = max + min/2)
+↓
+Mode-based pattern generation
+↓
+Color mapping (RGB222)
+
+A frame counter updates once per screen refresh and drives:
+- Animation
+- Automatic mode switching
+
+---
 
 ## Rendering Modes
 
-| Mode | Bits [9:8] | Name              | Character                          |
-|------|------------|-------------------|------------------------------------|
-| 0    | 00         | Radial Energy     | Concentric rings with vortex twist |
-| 1    | 01         | Plasma            | Diagonal color waves               |
-| 2    | 10         | Interference      | Crossed wave grid                  |
-| 3    | 11         | Chaos             | Nonlinear bitwise turbulence       |
+| Mode | Name              | Description                          |
+|------|------------------|--------------------------------------|
+| 0    | Radial Energy    | Expanding concentric rings with twist |
+| 1    | Plasma           | Smooth diagonal color gradients       |
+| 2    | Interference     | Cross-wave grid patterns              |
+| 3    | Chaos            | Nonlinear dynamic bitwise textures    |
 
-Each mode lasts 256 frames before the counter rolls over to the next.
+Each mode runs for ~256 frames before switching automatically.
 
-## Running Simulation
+---
 
-```bash
+## TinyTapeout Compatibility
+
+- Fully synthesizable (no delays, no `initial`)
+- No memory usage (pure combinational rendering)
+- Optimized arithmetic operations
+- Meets TinyTapeout constraints
+
+---
+
+## Simulation
+
+Run locally:
+
 cd test
 make sim
-```
+Expected output:
+PASS: hsync toggled
+PASS: vsync toggled
+PASS: uio_oe is zero
 
-Requires Icarus Verilog (`iverilog`) and optionally GTKWave for waveform viewing.
+Pin Mapping
+Signal	uo_out
+R[1]	0
+G[1]	1
+B[1]	2
+VSYNC	3
+R[0]	4
+G[0]	5
+B[0]	6
+HSYNC	7
 
-```bash
-# View waveform
-make wave
-```
+Repository Structure
+src/    → Verilog design
+test/   → Testbench and simulation
+docs/   → Architecture and design docs
 
-## Using on TinyTapeout
+ASIC Status
+This design has successfully passed the TinyTapeout flow, including synthesis,
+placement, routing, and GDS generation.
 
-1. Fork this repository.
-2. Ensure `info.yaml` has your correct author details.
-3. Push to GitHub. The TinyTapeout CI workflow will synthesize the design.
-4. Connect VGA output according to the TinyTapeout VGA PMOD pinout.
-5. Power on. No configuration is required; the design begins running immediately.
+Author
+Kannan S J
 
-### Pin Mapping
-
-| Signal  | uo_out bit |
-|---------|-----------|
-| R[1]    | 0         |
-| G[1]    | 1         |
-| B[1]    | 2         |
-| vsync   | 3         |
-| R[0]    | 4         |
-| G[0]    | 5         |
-| B[0]    | 6         |
-| hsync   | 7         |
-
-## Repository Structure
-
-```
-.
-├── src/
-│   ├── project.v            Top-level VGA rendering module
-│   └── hvsync_generator.v   VGA sync signal generator
-├── test/
-│   ├── testbench.v          Simulation testbench
-│   └── Makefile             Simulation build rules
-├── docs/
-│   ├── architecture.md      Pipeline and data-flow documentation
-│   ├── design.md            Mathematical basis for each mode
-│   └── visuals.md           Visual description of each rendering mode
-├── README.md
-└── info.yaml
-```
-
-## License
-
+License
 MIT
