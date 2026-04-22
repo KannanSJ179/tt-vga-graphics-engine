@@ -26,9 +26,10 @@ jobs:
           pip install pyyaml
           python -c "import yaml; yaml.safe_load(open('info.yaml'))"
 
-  gds:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run OpenLane flow
-        uses: TinyTapeout/tt-gds-action@v1
+ gds:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: TinyTapeout GDS Action
+      uses: TinyTapeout/tt-gds-action@main
