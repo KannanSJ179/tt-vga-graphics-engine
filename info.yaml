@@ -6,6 +6,15 @@ project:
   top_module: "tt_um_vga_example"
   clock_hz: 25175000
 
+  inputs:
+    - ui_in[7:0]
+
+  outputs:
+    - uo_out[7:0]
+
+  bidirectional:
+    - uio[7:0]
+
   tags:
     - vga
     - graphics
@@ -13,6 +22,5 @@ project:
     - demo
 
   pinout:
-    ui: "unused"
-    uo: "RGB + sync signals"
-    uio: "unused"
+    clock: clk
+    reset: rst_n
