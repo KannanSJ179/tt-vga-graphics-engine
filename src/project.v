@@ -62,18 +62,18 @@ module tt_um_vga_example (
 
     
     wire [7:0] plasma =
-        ((cx >> 2) + t) +
-        ((cy >> 2) + (t >> 1));
+    (cx[9:2] + t[7:0]) +
+    (cy[9:2] + t[8:1]);
 
     
     wire [7:0] wave =
-        ((cx >> 3) ^ (cy >> 3)) +
-        ((cx >> 4) + (cy >> 4));
+    (cx[9:3] ^ cy[9:3]) +
+    (cx[9:4] + cy[9:4]);
 
 
     wire [7:0] chaos =
-        (cx ^ (cy + t)) +
-        ((cx & cy) >> 2);
+    (cx[9:2] ^ (cy[9:2] + t[7:0])) +
+    ((cx[9:2] & cy[9:2]) >> 1);
 
     reg [7:0] pattern;
 
