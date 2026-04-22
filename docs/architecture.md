@@ -1,6 +1,3 @@
-===== docs/architecture.md =====
-
-```markdown
 # Architecture
 
 ## Overview
