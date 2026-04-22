@@ -1,6 +1,3 @@
-===== docs/design.md =====
-
-```markdown
 # Design
 
 ## Design Principles
