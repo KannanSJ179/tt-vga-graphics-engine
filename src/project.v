@@ -38,60 +38,48 @@ module tt_um_vga_example (
     wire [1:0] mode = frame[9:8];
     wire [9:0] t = frame;
 
-    // --------------------------------------------------
-    // SAFE CENTERING (NO $signed)
-    // --------------------------------------------------
+
     wire [10:0] cx = {1'b0, hpos} - 11'd320;
     wire [10:0] cy = {1'b0, vpos} - 11'd240;
 
-    // Absolute values (synthesis-safe)
-  wire [10:0] cx_neg = 11'd0 - cx;
-wire [10:0] cy_neg = 11'd0 - cy;
+    wire [10:0] cx_neg = 11'd0 - cx;
+    wire [10:0] cy_neg = 11'd0 - cy;
 
-wire [9:0] ax = cx[10] ? cx_neg[9:0] : cx[9:0];
-wire [9:0] ay = cy[10] ? cy_neg[9:0] : cy[9:0];
+    wire [9:0] ax = cx[10] ? cx_neg[9:0] : cx[9:0];
+    wire [9:0] ay = cy[10] ? cy_neg[9:0] : cy[9:0];
 
-    // Downscale for area efficiency
-    wire [6:0] ax_s = ax[9:2];
-    wire [6:0] ay_s = ay[9:2];
+    wire [6:0] ax_s = ax[9:3];
+    wire [6:0] ay_s = ay[9:3];
 
-    // Approximate radial distance
     wire [6:0] rmax = (ax_s > ay_s) ? ax_s : ay_s;
     wire [6:0] rmin = (ax_s > ay_s) ? ay_s : ax_s;
 
     wire [7:0] r = {1'b0, rmax} + {2'b00, rmin[6:1]};
 
-    // --------------------------------------------------
-    // MODE 0: RADIAL VORTEX
-    // --------------------------------------------------
-    wire [7:0] radial = (r << 2) + (t << 1);
-    wire [7:0] ripple = r + (t >> 2);
+
+    wire [8:0] radial_full = (r << 2) + (t << 1);
+    wire [7:0] radial = radial_full[7:0];
+
+    wire [8:0] ripple_full = r + (t >> 2);
+    wire [7:0] ripple = ripple_full[7:0];
     wire [7:0] vortex_final = radial ^ (ripple >> 2);
 
-    // --------------------------------------------------
-    // MODE 1: PLASMA (WIDTH SAFE)
-    // --------------------------------------------------
+
     wire [7:0] plasma =
         (cx[9:2] + t[7:0]) +
         (cy[9:2] + t[8:1]);
 
-    // --------------------------------------------------
-    // MODE 2: INTERFERENCE
-    // --------------------------------------------------
-    wire [7:0] wave =
-        (cx[9:3] ^ cy[9:3]) +
-        (cx[9:4] + cy[9:4]);
 
-    // --------------------------------------------------
-    // MODE 3: CHAOS (SANITIZED)
-    // --------------------------------------------------
+    wire [7:0] wave =
+    ({1'b0, cx[9:3]} ^ {1'b0, cy[9:3]}) +
+    ({2'b00, cx[9:4]} + {2'b00, cy[9:4]});
+
+
     wire [7:0] chaos =
         (cx[9:2] ^ (cy[9:2] + t[7:0])) +
         ((cx[9:2] & cy[9:2]) >> 1);
 
-    // --------------------------------------------------
-    // MODE SELECT
-    // --------------------------------------------------
+
     reg [7:0] pattern;
 
     always @(*) begin
@@ -99,7 +87,7 @@ wire [9:0] ay = cy[10] ? cy_neg[9:0] : cy[9:0];
             2'b00: pattern = vortex_final;
             2'b01: pattern = plasma;
             2'b10: pattern = wave;
-            default: pattern = chaos;
+            2'b11: pattern = chaos;
         endcase
     end
 
@@ -128,6 +116,12 @@ wire [9:0] ay = cy[10] ? cy_neg[9:0] : cy[9:0];
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    wire _unused = &{ena, uio_in, ui_in, 1'b0};
+    wire _unused = &{
+    ena, uio_in, ui_in, 1'b0,
+    cx_neg[10], cy_neg[10],
+    ax[1:0], ay[1:0],
+    rmin[0],
+    color[1:0]
+};
 
 endmodule
