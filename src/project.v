@@ -57,10 +57,10 @@ module tt_um_vga_example (
     wire [7:0] r = {1'b0, rmax} + {2'b00, rmin[6:1]};
 
 
-    wire [8:0] radial_full = (r << 2) + (t << 1);
+    wire [9:0] radial_full = (r << 2) + (t << 1);
     wire [7:0] radial = radial_full[7:0];
 
-    wire [8:0] ripple_full = r + (t >> 2);
+    wire [9:0] ripple_full = {2'b00, r} + (t >> 2);
     wire [7:0] ripple = ripple_full[7:0];
     wire [7:0] vortex_final = radial ^ (ripple >> 2);
 
@@ -117,11 +117,13 @@ module tt_um_vga_example (
     assign uio_oe  = 8'b0;
 
     wire _unused = &{
-    ena, uio_in, ui_in, 1'b0,
-    cx_neg[10], cy_neg[10],
-    ax[1:0], ay[1:0],
-    rmin[0],
-    color[1:0]
+        ena, uio_in, ui_in, 1'b0,
+        cx_neg[10], cy_neg[10],
+        ax[2:0], ay[2:0],          
+        rmin[0],
+        color[1:0],
+        radial_full[9:8],          
+        ripple_full[9:8]           
 };
 
 endmodule
